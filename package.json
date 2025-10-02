@@ -1,0 +1,10 @@
+{
+  "name": "hackwave-main",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix v0-sync-sphere-event-app",
+    "build": "npm run --prefix v0-sync-sphere-event-app build",
+    "start": "npm run --prefix v0-sync-sphere-event-app start",
+    "dev": "npm run --prefix v0-sync-sphere-event-app dev"
+  }
+}
