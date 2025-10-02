@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -9,13 +9,18 @@ import { Calendar, Clock, MapPin, Star, Trophy, Award, Zap, QrCode, ThumbsUp, Me
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { SOSButton } from "@/components/sos-button"
 import { AIChatbot } from "@/components/ai-chatbot"
+import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 import confetti from "canvas-confetti"
 
 export default function AttendeeDashboard() {
+  const router = useRouter()
   const [selectedSession, setSelectedSession] = useState<string | null>(null)
   const [showQR, setShowQR] = useState(false)
   const [feedback, setFeedback] = useState<{ [key: string]: number }>({})
   const [showConfetti, setShowConfetti] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   const agenda = [
     {
@@ -59,9 +64,13 @@ export default function AttendeeDashboard() {
     { id: "2", text: "Workshop room changed to 201", time: "15 min ago", new: false },
   ])
 
+  const getUserDisplayName = () => {
+    return user?.user_metadata?.name || user?.email?.split('@')[0] || 'You'
+  }
+
   const leaderboard = [
     { rank: 1, name: "Alex Johnson", points: 850, badge: "gold" },
-    { rank: 2, name: "You", points: 720, badge: "silver", isUser: true },
+    { rank: 2, name: getUserDisplayName(), points: 720, badge: "silver", isUser: true },
     { rank: 3, name: "Emma Davis", points: 680, badge: "bronze" },
     { rank: 4, name: "Chris Lee", points: 620, badge: "none" },
     { rank: 5, name: "Taylor Swift", points: 580, badge: "none" },
@@ -85,10 +94,47 @@ export default function AttendeeDashboard() {
     }
   }
 
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error || !user) {
+          console.log('No authenticated user, redirecting to auth...')
+          router.push('/auth?role=attendee')
+          return
+        }
+        
+        setUser(user)
+        console.log('Authenticated user:', user)
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.push('/auth?role=attendee')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.push('/auth?role=attendee')
+      } else if (session?.user) {
+        setUser(session.user)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router])
+
   const handleCheckIn = () => {
     setShowQR(true)
     setTimeout(() => {
       setShowQR(false)
+      // Note: canvas-confetti types missing, but functionality works
       confetti({
         particleCount: 150,
         spread: 100,
@@ -97,8 +143,28 @@ export default function AttendeeDashboard() {
     }, 2000)
   }
 
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent mx-auto mb-4" />
+          <p className="text-white">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render if no user (will redirect)
+  if (!user) {
+    return null
+  }
+
   return (
-    <DashboardLayout role="attendee" userName="Alex Thompson">
+    <DashboardLayout 
+      role="attendee" 
+      userName={user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
+    >
       <div className="space-y-6">
         {/* Header */}
         <motion.div

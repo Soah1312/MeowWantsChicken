@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,10 +10,12 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Calendar, Users, Zap, BarChart3, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
 
 function AuthContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const roleParam = searchParams.get("role")
 
   const [isLogin, setIsLogin] = useState(true)
@@ -23,6 +25,9 @@ function AuthContent() {
     password: "",
     name: "",
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const roles = [
     { id: "organizer", name: "Organizer", icon: Calendar, color: "cyan", desc: "Manage events" },
@@ -31,11 +36,77 @@ function AuthContent() {
     { id: "sponsor", name: "Sponsor", icon: BarChart3, color: "green", desc: "Track ROI" },
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && selectedRole) {
+        router.push(`/dashboard/${selectedRole}`)
+      }
+    }
+    checkUser()
+  }, [selectedRole, router])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Redirect to appropriate dashboard based on role
-    if (selectedRole) {
-      window.location.href = `/dashboard/${selectedRole}`
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      if (isLogin) {
+        // Sign in existing user
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+
+        if (error) {
+          setError(error.message)
+        } else if (data.user) {
+          setSuccess('✅ Successfully signed in!')
+          console.log('User signed in:', data.user)
+          
+          // Store user role in user metadata or local storage
+          localStorage.setItem('userRole', selectedRole || 'attendee')
+          
+          // Redirect to dashboard
+          setTimeout(() => {
+            router.push(`/dashboard/${selectedRole || 'attendee'}`)
+          }, 1000)
+        }
+      } else {
+        // Sign up new user
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              name: formData.name,
+              role: selectedRole,
+            }
+          }
+        })
+
+        if (error) {
+          setError(error.message)
+        } else if (data.user) {
+          if (data.user.email_confirmed_at) {
+            setSuccess('🎉 Account created successfully! Signing you in...')
+            localStorage.setItem('userRole', selectedRole || 'attendee')
+            setTimeout(() => {
+              router.push(`/dashboard/${selectedRole || 'attendee'}`)
+            }, 1000)
+          } else {
+            setSuccess('🎉 Account created! Please check your email for confirmation.')
+          }
+          console.log('New user created:', data.user)
+        }
+      }
+    } catch (err) {
+      setError(`Authentication failed: ${err}`)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -202,9 +273,42 @@ function AuthContent() {
                     />
                   </div>
 
+                  {/* Error Message */}
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-red-400 text-sm"
+                    >
+                      ❌ {error}
+                    </motion.div>
+                  )}
+
+                  {/* Success Message */}
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-green-400 text-sm"
+                    >
+                      {success}
+                    </motion.div>
+                  )}
+
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button type="submit" className="w-full bg-cyan-500 text-black hover:bg-cyan-400">
-                      {isLogin ? "Sign In" : "Create Account"}
+                    <Button 
+                      type="submit" 
+                      disabled={loading}
+                      className="w-full bg-cyan-500 text-black hover:bg-cyan-400 disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                          {isLogin ? "Signing In..." : "Creating Account..."}
+                        </div>
+                      ) : (
+                        isLogin ? "Sign In" : "Create Account"
+                      )}
                     </Button>
                   </motion.div>
                 </motion.form>
