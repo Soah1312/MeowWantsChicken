@@ -1,103 +1,50 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence, Reorder } from "framer-motion"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import { Calendar, MapPin, ArrowRight, Plus, Filter, Users, CheckSquare, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import {
-  Calendar,
-  Users,
-  CheckSquare,
-  Megaphone,
-  QrCode,
-  Plus,
-  Clock,
-  DollarSign,
-  TrendingUp,
-  GripVertical,
-  Check,
-} from "lucide-react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { SOSButton } from "@/components/sos-button"
 import { AIChatbot } from "@/components/ai-chatbot"
+import { organizerEvents, type OrganizerEvent } from "@/lib/organizer-events"
 
-export default function OrganizerDashboard() {
-  const [scheduleItems, setScheduleItems] = useState([
-    { id: "1", time: "09:00 AM", title: "Registration & Welcome", duration: "1h" },
-    { id: "2", time: "10:00 AM", title: "Keynote Speech", duration: "1.5h" },
-    { id: "3", time: "11:30 AM", title: "Panel Discussion", duration: "1h" },
-    { id: "4", time: "12:30 PM", title: "Lunch Break", duration: "1h" },
-  ])
+const statusBadgeStyles: Record<OrganizerEvent["status"], string> = {
+  Live: "bg-green-500/20 text-green-400 border border-green-400/40",
+  Planning: "bg-cyan-500/20 text-cyan-400 border border-cyan-400/40",
+  Draft: "bg-white/10 text-gray-300 border border-white/10",
+}
 
-  const [vendorTasks, setVendorTasks] = useState([
-    { id: "1", vendor: "Catering Co", task: "Setup buffet tables", status: "completed" },
-    { id: "2", vendor: "AV Solutions", task: "Test microphones", status: "in-progress" },
-    { id: "3", vendor: "Decor Plus", task: "Install stage backdrop", status: "pending" },
-  ])
+const sanitizeNumber = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0
 
-  const [sponsors, setSponsors] = useState([
-    { id: "1", name: "TechCorp", tier: "Platinum", status: "approved", amount: "$50,000" },
-    { id: "2", name: "InnovateLabs", tier: "Gold", status: "pending", amount: "$25,000" },
-    { id: "3", name: "StartupHub", tier: "Silver", status: "approved", amount: "$10,000" },
-  ])
-
-  const [announcement, setAnnouncement] = useState("")
-  const [showAnnouncementSuccess, setShowAnnouncementSuccess] = useState(false)
-
-  const stats = [
-    { label: "Total Attendees", value: "1,247", icon: Users, change: "+12%", color: "cyan" },
-    { label: "Active Sessions", value: "8", icon: Calendar, change: "+2", color: "blue" },
-    { label: "Pending Tasks", value: "15", icon: CheckSquare, change: "-3", color: "purple" },
-    { label: "Check-ins Today", value: "892", icon: QrCode, change: "+156", color: "green" },
-  ]
-
-  const handleBroadcast = () => {
-    if (announcement.trim()) {
-      setShowAnnouncementSuccess(true)
-      setTimeout(() => {
-        setShowAnnouncementSuccess(false)
-        setAnnouncement("")
-      }, 3000)
-    }
-  }
-
-  const toggleTaskStatus = (taskId: string) => {
-    setVendorTasks((tasks) =>
-      tasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status:
-                task.status === "pending" ? "in-progress" : task.status === "in-progress" ? "completed" : "completed",
-            }
-          : task,
-      ),
-    )
-  }
-
-  const approveSponsor = (sponsorId: string) => {
-    setSponsors((sponsors) =>
-      sponsors.map((sponsor) => (sponsor.id === sponsorId ? { ...sponsor, status: "approved" } : sponsor)),
-    )
-  }
+export default function OrganizerDashboardLanding() {
+  const totalEvents = organizerEvents.length
+  const liveCount = organizerEvents.filter((event) => event.status === "Live").length
+  const totalAttendees = organizerEvents.reduce((sum, event) => sum + sanitizeNumber(event.metrics.attendees.value), 0)
+  const totalActiveSessions = organizerEvents.reduce((sum, event) => sum + sanitizeNumber(event.metrics.activeSessions.value), 0)
+  const totalPendingTasks = organizerEvents.reduce((sum, event) => sum + sanitizeNumber(event.metrics.pendingTasks.value), 0)
 
   return (
     <DashboardLayout role="organizer" userName="Sarah Chen">
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="space-y-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
         >
-          <div>
-            <h1 className="font-bold text-3xl text-white">Event Dashboard</h1>
-            <p className="text-gray-400">TechConf 2025 - March 15-17</p>
+          <div className="space-y-3">
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-400/80">Welcome back, Sarah</p>
+            <h1 className="font-bold text-3xl text-white md:text-4xl">Your Hosted Events</h1>
+            <p className="text-gray-400 md:text-lg">
+              {totalEvents} experiences under your leadership  {liveCount} currently live
+            </p>
           </div>
-          <div className="flex gap-3">
-            <SOSButton />
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
             <Button className="bg-cyan-500 text-black hover:bg-cyan-400">
               <Plus className="mr-2 h-4 w-4" />
               New Event
@@ -105,249 +52,135 @@ export default function OrganizerDashboard() {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, idx) => (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">Total Attendees</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{totalAttendees.toLocaleString()}</p>
+              </div>
+              <Users className="h-6 w-6 text-cyan-400" />
+            </div>
+            <p className="mt-3 text-sm text-gray-400">
+              Combined projections across all events, updated in real time.
+            </p>
+          </Card>
+          <Card className="border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">Active Sessions</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{totalActiveSessions.toLocaleString()}</p>
+              </div>
+              <Sparkles className="h-6 w-6 text-cyan-400" />
+            </div>
+            <p className="mt-3 text-sm text-gray-400">
+              Sessions happening this week across your portfolio.
+            </p>
+          </Card>
+          <Card className="border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">Pending Tasks</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{totalPendingTasks.toLocaleString()}</p>
+              </div>
+              <CheckSquare className="h-6 w-6 text-cyan-400" />
+            </div>
+            <p className="mt-3 text-sm text-gray-400">
+              Stay on top of vendor coordination and sponsor deliverables.
+            </p>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-3">
+          {organizerEvents.map((event, index) => (
             <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
+              key={event.slug}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              transition={{ delay: index * 0.1 }}
             >
-              <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">{stat.label}</p>
-                    <motion.p
-                      initial={{ scale: 0.5 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2 + idx * 0.1, type: "spring" }}
-                      className="mt-2 font-bold text-3xl text-white"
-                    >
-                      {stat.value}
-                    </motion.p>
-                    <p className="mt-1 text-cyan-400 text-sm">{stat.change}</p>
+              <Card className="flex h-full flex-col justify-between border border-white/10 bg-white/5 p-6 backdrop-blur">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <Badge className={`px-3 py-1 text-xs uppercase tracking-wide ${statusBadgeStyles[event.status] ?? ""}`}>
+                      {event.status}
+                    </Badge>
+                    <span className="text-xs text-gray-400">{event.dateRange}</span>
                   </div>
-                  <div className="rounded-lg bg-cyan-500/10 p-3">
-                    <stat.icon className="h-6 w-6 text-cyan-400" />
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold text-white">{event.name}</h2>
+                    <p className="text-sm text-cyan-200/80">{event.subtitle}</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Calendar className="h-4 w-4 text-cyan-400" />
+                      <span>{event.dateRange}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <MapPin className="h-4 w-4 text-cyan-400" />
+                      <span>{event.location}</span>
+                    </div>
                   </div>
+                  <div className="rounded-lg border border-white/10 bg-black/30 p-4">
+                    <div className="flex items-start gap-3 text-sm text-cyan-200/90">
+                      <Sparkles className="mt-0.5 h-4 w-4 text-cyan-400" />
+                      <span>{event.heroHighlight}</span>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md bg-white/5 p-3">
+                      <p className="text-xs text-gray-400">Attendees</p>
+                      <p className="text-xl font-semibold text-white">{event.metrics.attendees.value}</p>
+                      <p className="text-xs text-green-400">{event.metrics.attendees.change}</p>
+                    </div>
+                    <div className="rounded-md bg-white/5 p-3">
+                      <p className="text-xs text-gray-400">Pending Tasks</p>
+                      <p className="text-xl font-semibold text-white">{event.metrics.pendingTasks.value}</p>
+                      <p className="text-xs text-cyan-300">{event.metrics.pendingTasks.change}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <Users className="h-4 w-4 text-cyan-400" />
+                    <span>{event.metrics.activeSessions.value} active sessions</span>
+                  </div>
+                  <Button asChild className="bg-cyan-500 text-black hover:bg-cyan-400">
+                    <Link href={`/dashboard/organizer/${event.slug}`} className="flex items-center gap-2">
+                      View Event
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </div>
               </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Schedule Builder */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-cyan-400" />
-                <h2 className="font-semibold text-xl text-white">Schedule Builder</h2>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Session
-              </Button>
-            </div>
-            <Reorder.Group axis="y" values={scheduleItems} onReorder={setScheduleItems} className="space-y-3">
-              {scheduleItems.map((item) => (
-                <Reorder.Item key={item.id} value={item}>
-                  <motion.div
-                    layout
-                    className="group flex cursor-grab items-center gap-4 rounded-lg border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-500/30 active:cursor-grabbing"
-                  >
-                    <GripVertical className="h-5 w-5 text-gray-500" />
-                    <div className="flex flex-1 items-center gap-4">
-                      <div className="flex items-center gap-2 rounded-md bg-cyan-500/10 px-3 py-1">
-                        <Clock className="h-4 w-4 text-cyan-400" />
-                        <span className="font-medium text-cyan-400 text-sm">{item.time}</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-white">{item.title}</p>
-                        <p className="text-gray-400 text-sm">{item.duration}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
-          </Card>
-        </motion.div>
-
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Vendor Task Board */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-            <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <CheckSquare className="h-5 w-5 text-cyan-400" />
-                <h2 className="font-semibold text-xl text-white">Vendor Tasks</h2>
-              </div>
-              <div className="space-y-3">
-                {vendorTasks.map((task, idx) => (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + idx * 0.1 }}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-white">{task.task}</p>
-                      <p className="text-gray-400 text-sm">{task.vendor}</p>
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleTaskStatus(task.id)}
-                    >
-                      <Badge
-                        className={
-                          task.status === "completed"
-                            ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                            : task.status === "in-progress"
-                              ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
-                              : "bg-gray-500/20 text-gray-400 hover:bg-gray-500/30"
-                        }
-                      >
-                        {task.status === "completed" && <Check className="mr-1 h-3 w-3" />}
-                        {task.status.replace("-", " ")}
-                      </Badge>
-                    </motion.button>
-                  </motion.div>
-                ))}
-              </div>
-            </Card>
-          </motion.div>
-
-          {/* Sponsor Management */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-            <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-cyan-400" />
-                <h2 className="font-semibold text-xl text-white">Sponsor Management</h2>
-              </div>
-              <div className="space-y-3">
-                {sponsors.map((sponsor, idx) => (
-                  <motion.div
-                    key={sponsor.id}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + idx * 0.1 }}
-                    className="rounded-lg border border-white/10 bg-white/5 p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-white">{sponsor.name}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Badge variant="outline" className="border-cyan-500/30 text-cyan-400">
-                            {sponsor.tier}
-                          </Badge>
-                          <span className="text-gray-400 text-sm">{sponsor.amount}</span>
-                        </div>
-                      </div>
-                      {sponsor.status === "pending" ? (
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Button
-                            size="sm"
-                            onClick={() => approveSponsor(sponsor.id)}
-                            className="bg-cyan-500 text-black hover:bg-cyan-400"
-                          >
-                            Approve
-                          </Button>
-                        </motion.div>
-                      ) : (
-                        <Badge className="bg-green-500/20 text-green-400">
-                          <Check className="mr-1 h-3 w-3" />
-                          Approved
-                        </Badge>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </Card>
-          </motion.div>
+          <Card className="border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <h3 className="text-lg font-semibold text-white">Engagement Insights</h3>
+            <p className="mt-2 text-sm text-gray-400">
+              TechConf 2025 drives the highest check-ins, while Future of Health Summit shows a steady rise in interest.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {organizerEvents.slice(0, 2).map((event) => (
+                <div key={event.slug} className="rounded-lg border border-white/10 bg-black/30 p-4">
+                  <p className="text-sm font-medium text-white">{event.name}</p>
+                  <p className="mt-2 text-xs text-gray-400">Check-ins Today</p>
+                  <p className="text-lg font-semibold text-cyan-300">{event.metrics.checkinsToday.value}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+          <Card className="border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <h3 className="text-lg font-semibold text-white">Automation Feed</h3>
+            <ul className="mt-4 space-y-3 text-sm text-gray-400">
+              <li>- Follow up with pending sponsors before end of week.</li>
+              <li>- Schedule a technical rehearsal for Green Innovations Expo main stage.</li>
+              <li>- Health Summit requires updated attendee dietary preferences.</li>
+            </ul>
+          </Card>
         </div>
-
-        {/* Broadcast Announcements */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-          <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-            <div className="mb-4 flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-cyan-400" />
-              <h2 className="font-semibold text-xl text-white">Broadcast Announcement</h2>
-            </div>
-            <div className="flex gap-3">
-              <Input
-                placeholder="Type your announcement..."
-                value={announcement}
-                onChange={(e) => setAnnouncement(e.target.value)}
-                className="flex-1 border-white/10 bg-white/5 text-white placeholder:text-gray-500"
-              />
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button onClick={handleBroadcast} className="bg-cyan-500 text-black hover:bg-cyan-400">
-                  Send
-                </Button>
-              </motion.div>
-            </div>
-            <AnimatePresence>
-              {showAnnouncementSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -10, height: 0 }}
-                  className="mt-3 rounded-lg bg-green-500/20 p-3 text-green-400"
-                >
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" />
-                    <span className="text-sm">Announcement sent to all attendees!</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
-        </motion.div>
-
-        {/* QR Check-in Stats */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
-          <Card className="border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-            <div className="mb-4 flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-cyan-400" />
-              <h2 className="font-semibold text-xl text-white">Check-in Statistics</h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-lg bg-white/5 p-4">
-                <p className="text-gray-400 text-sm">Total Check-ins</p>
-                <p className="mt-2 font-bold text-2xl text-white">892</p>
-                <div className="mt-2 flex items-center gap-1 text-green-400 text-sm">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>+15% from yesterday</span>
-                </div>
-              </div>
-              <div className="rounded-lg bg-white/5 p-4">
-                <p className="text-gray-400 text-sm">Current Attendance</p>
-                <p className="mt-2 font-bold text-2xl text-white">71.5%</p>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "71.5%" }}
-                    transition={{ delay: 1, duration: 1 }}
-                    className="h-full bg-cyan-500"
-                  />
-                </div>
-              </div>
-              <div className="rounded-lg bg-white/5 p-4">
-                <p className="text-gray-400 text-sm">Peak Hour</p>
-                <p className="mt-2 font-bold text-2xl text-white">10:00 AM</p>
-                <p className="mt-2 text-gray-400 text-sm">324 check-ins</p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
       </div>
 
       <AIChatbot />
