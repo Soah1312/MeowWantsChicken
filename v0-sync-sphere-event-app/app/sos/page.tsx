@@ -369,7 +369,7 @@ export default function SOSPage() {
                   </CardContent>
                 </Card>
               ) : (
-                alerts.map((alert) => (
+                alerts.map((alert: SOSAlert) => (
                   <Card key={alert.id} className={`hover:shadow-md transition-shadow ${
                     alert.priority === 'critical' ? 'border-red-500 border-2' : 
                     alert.priority === 'high' ? 'border-orange-300' : ''
