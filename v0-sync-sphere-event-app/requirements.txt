@@ -1,0 +1,2 @@
+# Railway requires this file for certain buildpacks.
+# This project uses Node.js via pnpm; no Python dependencies are needed.
