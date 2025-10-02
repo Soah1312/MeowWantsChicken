@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'react-hot-toast'
+import AuthInitializer from '@/components/AuthInitializer'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,7 +20,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+        <AuthInitializer />
         {children}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+          }}
+        />
         <Analytics />
       </body>
     </html>

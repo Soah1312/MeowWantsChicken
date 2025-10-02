@@ -5,37 +5,15 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowRight, Calendar, Users, Zap, Shield, BarChart3, MessageSquare } from "lucide-react"
 import Link from "next/link"
+import Navbar from "@/components/Navbar"
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-lg"
-      >
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-2"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500">
-              <Calendar className="h-5 w-5 text-black" />
-            </div>
-            <span className="text-xl font-bold">SyncSphere</span>
-          </motion.div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-            <Link href="/auth">
-              <Button variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
-                Sign In
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </motion.nav>
+      {/* Use the new Navbar component */}
+      <div className="bg-black">
+        <Navbar />
+      </div>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -76,19 +54,19 @@ export default function LandingPage() {
               transition={{ delay: 0.4 }}
               className="flex flex-col items-center justify-center gap-4 sm:flex-row"
             >
-              <Link href="/auth?role=organizer">
+              <Link href="/auth/signup">
                 <Button size="lg" className="group bg-white text-black hover:bg-gray-200">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="/auth?role=attendee">
+              <Link href="/auth/signin">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white/20 bg-transparent text-white hover:bg-white/10"
                 >
-                  Join as Attendee
+                  Sign In
                 </Button>
               </Link>
             </motion.div>
@@ -114,7 +92,7 @@ export default function LandingPage() {
                 transition={{ delay: 0.7 + idx * 0.1 }}
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
-                <Link href={`/auth?role=${item.role.toLowerCase()}`}>
+                <Link href="/auth/signup">
                   <Card className="group cursor-pointer border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10">
                     <item.icon className="mb-4 h-8 w-8 text-cyan-400 transition-transform group-hover:scale-110" />
                     <h3 className="mb-2 font-semibold text-lg text-white">{item.role}</h3>
@@ -295,7 +273,7 @@ export default function LandingPage() {
               <div className="relative">
                 <h2 className="mb-4 text-balance font-bold text-4xl md:text-5xl">Ready to transform your events?</h2>
                 <p className="mb-8 text-gray-300 text-lg">Join thousands of event professionals using SyncSphere</p>
-                <Link href="/auth">
+                <Link href="/auth/signup">
                   <Button size="lg" className="bg-white text-black hover:bg-gray-200">
                     Get Started Free
                     <ArrowRight className="ml-2 h-4 w-4" />
