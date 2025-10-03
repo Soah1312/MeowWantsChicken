@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import AuthInitializer from '@/components/AuthInitializer'
 import './globals.css'
 import { SupabaseProvider } from '@/lib/contexts/SupabaseContext'
+import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -19,23 +20,25 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <SupabaseProvider>
-          <AuthInitializer />
-          {children}
-        </SupabaseProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-          }}
-        />
-        <Analytics />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <SupabaseProvider>
+            <AuthInitializer />
+            {children}
+          </SupabaseProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+            }}
+          />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
@@ -14,12 +14,23 @@ import {
   X,
   Calendar
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { Switch } from '@/components/ui/switch'
 
 export default function Navbar() {
   const { user, signOut } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isDarkMode = (mounted ? resolvedTheme : theme) === 'dark'
+  const themeLabel = isDarkMode ? 'Dark mode' : 'Light mode'
 
   const handleSignOut = async () => {
     await signOut()
@@ -40,7 +51,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="border-b border-border bg-background/80 text-foreground shadow-sm transition-colors supports-[backdrop-filter]:bg-background/60 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and primary navigation */}
@@ -50,7 +61,7 @@ export default function Navbar() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-xl text-gray-900">SyncSphere</span>
+                <span className="font-bold text-xl text-foreground">SyncSphere</span>
               </Link>
             </div>
             
@@ -64,8 +75,8 @@ export default function Navbar() {
                     href={item.href}
                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
                       isActive(item.href)
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? 'border-primary text-foreground'
+                        : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-4 w-4 mr-2" />
@@ -78,14 +89,25 @@ export default function Navbar() {
 
           {/* User menu */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
+            {mounted && (
+              <div className="flex items-center space-x-2 rounded-full border border-border bg-muted/70 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+                <span>{themeLabel}</span>
+                <Switch
+                  checked={isDarkMode}
+                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                  aria-label="Toggle dark mode"
+                />
+              </div>
+            )}
+          
             {user ? (
               <>
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-foreground">
                       {user.user_metadata?.name || user.email?.split('@')[0]}
                     </span>
                   </div>
@@ -107,7 +129,7 @@ export default function Navbar() {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/auth/signup">
+                <Link href="/?selectRole=true">
                   <Button size="sm">
                     Sign Up
                   </Button>
@@ -117,10 +139,17 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center">
+          <div className="sm:hidden flex items-center space-x-3">
+            {mounted && (
+              <Switch
+                checked={isDarkMode}
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                aria-label="Toggle dark mode"
+              />
+            )}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
             >
               {isMobileMenuOpen ? (
                 <X className="block h-6 w-6" />
@@ -157,18 +186,18 @@ export default function Navbar() {
           </div>
           
           {/* Mobile user menu */}
-          <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="pt-4 pb-3 border-t border-border">
             {user ? (
               <div className="space-y-3">
                 <div className="flex items-center px-4">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-blue-600" />
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">
+                    <div className="text-base font-medium text-foreground">
                       {user.user_metadata?.name || user.email?.split('@')[0]}
                     </div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
+                    <div className="text-sm text-muted-foreground">{user.email}</div>
                   </div>
                 </div>
                 <div className="px-4">
@@ -189,7 +218,7 @@ export default function Navbar() {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/auth/signup" className="block">
+                <Link href="/?selectRole=true" className="block">
                   <Button className="w-full">
                     Sign Up
                   </Button>

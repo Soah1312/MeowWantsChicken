@@ -56,12 +56,12 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors">
       <Dialog open={showRoleDialog} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="border-white/10 bg-black/95 text-white backdrop-blur-xl">
+        <DialogContent className="border-border bg-card/95 text-foreground backdrop-blur-xl transition-colors dark:bg-background/95">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold text-white">Choose your journey</DialogTitle>
-            <DialogDescription className="text-gray-300">
+            <DialogTitle className="text-2xl font-semibold">Choose your journey</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Select the role that best matches your event experience.
             </DialogDescription>
           </DialogHeader>
@@ -75,12 +75,12 @@ export default function LandingPage() {
                 whileHover={{ y: -6, transition: { duration: 0.2 } }}
               >
                 <Card
-                  className="cursor-pointer border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10"
+                  className="cursor-pointer border-border/60 bg-card/70 p-6 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-card"
                   onClick={() => handleRoleSelect(item.key)}
                 >
                   <item.icon className="mb-4 h-8 w-8 text-cyan-400 transition-transform group-hover:scale-110" />
-                  <h3 className="mb-2 text-lg font-semibold text-white">{item.label}</h3>
-                  <p className="text-sm text-gray-400">{item.desc}</p>
+                  <h3 className="mb-2 text-lg font-semibold">{item.label}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
                 </Card>
               </motion.div>
             ))}
@@ -89,14 +89,14 @@ export default function LandingPage() {
       </Dialog>
 
       {/* Use the new Navbar component */}
-      <div className="bg-black">
+      <div className="bg-background/80">
         <Navbar />
       </div>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
         {/* Animated grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:4rem_4rem] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)]" />
 
         <div className="container relative mx-auto px-4">
           <motion.div
@@ -109,7 +109,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="mb-6 inline-block rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-400"
+              className="mb-6 inline-block rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-400"
             >
               The Future of Event Management
             </motion.div>
@@ -121,7 +121,7 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="mb-10 text-pretty text-lg text-gray-400 leading-relaxed md:text-xl">
+            <p className="mb-10 text-pretty text-lg text-muted-foreground leading-relaxed md:text-xl">
               Your complete toolkit to manage events seamlessly. Connect organizers, attendees, vendors, and sponsors in
               one unified platform.
             </p>
@@ -134,7 +134,7 @@ export default function LandingPage() {
             >
               <Button
                 size="lg"
-                className="group bg-white text-black hover:bg-gray-200"
+                className="group bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => setShowRoleDialog(true)}
               >
                 Get Started
@@ -144,7 +144,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/20 bg-transparent text-white hover:bg-white/10"
+                  className="border-border bg-transparent text-foreground hover:bg-muted/40"
                 >
                   Sign In
                 </Button>
@@ -331,12 +331,14 @@ export default function LandingPage() {
               <div className="relative">
                 <h2 className="mb-4 text-balance font-bold text-4xl md:text-5xl">Ready to transform your events?</h2>
                 <p className="mb-8 text-gray-300 text-lg">Join thousands of event professionals using SyncSphere</p>
-                <Link href="/auth/signup">
-                  <Button size="lg" className="bg-white text-black hover:bg-gray-200">
-                    Get Started Free
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => setShowRoleDialog(true)}
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </Card>
           </motion.div>
