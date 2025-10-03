@@ -21,14 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-<<<<<<< HEAD
         <SupabaseProvider>
+          <AuthInitializer />
           {children}
         </SupabaseProvider>
-=======
-        <AuthInitializer />
-        {children}
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 4000,
@@ -38,7 +35,6 @@ export default function RootLayout({
             },
           }}
         />
->>>>>>> c4ebb179d90099948a1136b47cf3e8e95e780bd7
         <Analytics />
       </body>
     </html>
