@@ -1,15 +1,93 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowRight, Calendar, Users, Zap, Shield, BarChart3, MessageSquare } from "lucide-react"
+import {
+  ArrowRight,
+  Calendar,
+  Users,
+  Zap,
+  Shield,
+  BarChart3,
+  MessageSquare,
+} from "lucide-react"
 import Link from "next/link"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import Navbar from "@/components/Navbar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+const roleOptions = [
+  { key: "organiser", label: "Organiser", icon: Calendar, desc: "Manage events end-to-end" },
+  { key: "attendee", label: "Attendee", icon: Users, desc: "Experience seamless events" },
+  { key: "vendor", label: "Vendor", icon: Zap, desc: "Deliver services efficiently" },
+  { key: "sponsor", label: "Sponsor", icon: BarChart3, desc: "Track your ROI" },
+]
 
 export default function LandingPage() {
+  const [showRoleDialog, setShowRoleDialog] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (searchParams.get("selectRole") === "true") {
+      setShowRoleDialog(true)
+    }
+  }, [searchParams])
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowRoleDialog(open)
+    if (!open && searchParams.get("selectRole")) {
+      router.replace(pathname)
+    }
+  }
+
+  const handleRoleSelect = (role: string) => {
+    setShowRoleDialog(false)
+    router.push(`/auth/signup?role=${role}`)
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
+      <Dialog open={showRoleDialog} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="border-white/10 bg-black/95 text-white backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-white">Choose your journey</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Select the role that best matches your event experience.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 md:grid-cols-2">
+            {roleOptions.map((item, idx) => (
+              <motion.div
+                key={item.key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+              >
+                <Card
+                  className="cursor-pointer border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10"
+                  onClick={() => handleRoleSelect(item.key)}
+                >
+                  <item.icon className="mb-4 h-8 w-8 text-cyan-400 transition-transform group-hover:scale-110" />
+                  <h3 className="mb-2 text-lg font-semibold text-white">{item.label}</h3>
+                  <p className="text-sm text-gray-400">{item.desc}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Use the new Navbar component */}
       <div className="bg-black">
         <Navbar />
@@ -54,12 +132,14 @@ export default function LandingPage() {
               transition={{ delay: 0.4 }}
               className="flex flex-col items-center justify-center gap-4 sm:flex-row"
             >
-              <Link href="/auth/signup">
-                <Button size="lg" className="group bg-white text-black hover:bg-gray-200">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                className="group bg-white text-black hover:bg-gray-200"
+                onClick={() => setShowRoleDialog(true)}
+              >
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
               <Link href="/auth/signin">
                 <Button
                   size="lg"
@@ -72,35 +152,13 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Role Selection Cards */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="mx-auto mt-20 grid max-w-5xl gap-4 md:grid-cols-4"
+            className="mx-auto mt-20 max-w-3xl text-center"
           >
-            {[
-              { role: "Organizer", icon: Calendar, desc: "Manage events end-to-end", color: "cyan" },
-              { role: "Attendee", icon: Users, desc: "Experience seamless events", color: "blue" },
-              { role: "Vendor", icon: Zap, desc: "Deliver services efficiently", color: "purple" },
-              { role: "Sponsor", icon: BarChart3, desc: "Track your ROI", color: "green" },
-            ].map((item, idx) => (
-              <motion.div
-                key={item.role}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + idx * 0.1 }}
-                whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              >
-                <Link href="/auth/signup">
-                  <Card className="group cursor-pointer border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10">
-                    <item.icon className="mb-4 h-8 w-8 text-cyan-400 transition-transform group-hover:scale-110" />
-                    <h3 className="mb-2 font-semibold text-lg text-white">{item.role}</h3>
-                    <p className="text-gray-400 text-sm">{item.desc}</p>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-400/70">Trusted by every role in the event ecosystem</p>
           </motion.div>
         </div>
       </section>
